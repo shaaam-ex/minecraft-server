@@ -4,5 +4,5 @@ import { validateAuth } from "../../middleware/validateAuth";
 
 export default async function serverRoutes(fastify: FastifyInstance) {
   // GET /api/server/all
-  fastify.get("/all", { preHandler: validateAuth}, getAllServersController);
+  fastify.get("/all", { preHandler: validateAuth }, getAllServersController);
 }
