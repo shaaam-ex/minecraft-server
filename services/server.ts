@@ -10,3 +10,25 @@ export async function getAllServers() {
     throw error;
   }
 }
+
+export async function createServer(
+  name: string,
+  status: boolean,
+  configuration: Record<string, any>,
+  version: string
+) {
+  try {
+    const server = await prisma.server.create({
+      data: {
+        name,
+        status,
+        configuration,
+        version,
+      },
+    });
+    return server;
+  } catch (error) {
+    console.error("Error creating server:", error);
+    throw error;
+  }
+}
