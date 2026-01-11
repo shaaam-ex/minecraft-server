@@ -17,7 +17,7 @@ export async function loginController(request: FastifyRequest, response: Fastify
 
     const rules = {
       email: 'required|email',
-      password: 'required|min:6',
+      password: 'required',
     };
 
     const validator = new Validatorjs({ email, password }, rules);
@@ -26,7 +26,6 @@ export async function loginController(request: FastifyRequest, response: Fastify
       return response.status(400).send({
         success: false,
         message: 'Validation failed',
-        errors: validator.errors.all(),
       });
     }
 
