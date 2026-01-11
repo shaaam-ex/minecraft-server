@@ -15,7 +15,8 @@ export async function createServer(
   name: string,
   status: boolean,
   configuration: Record<string, any>,
-  version: string
+  version: string,
+  userId: number
 ) {
   try {
     const server = await prisma.server.create({
@@ -24,6 +25,10 @@ export async function createServer(
         status,
         configuration,
         version,
+        createdBy: userId,
+        // Dynamically set port by using ssh
+        ipAddress: "localhost",
+        port: 25565,
       },
     });
     return server;

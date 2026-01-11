@@ -1,6 +1,6 @@
 import { CreateServerBody } from "./type";
 import { FastifyRequest, FastifyReply } from "fastify";
-import { getAllServers } from "../../services/server";
+import { createServer, getAllServers } from "../../services/server";
 import Validator from "validatorjs";
 
 export async function getAllServersController(
@@ -38,5 +38,15 @@ export async function createServerController(
     });
   }
 
-  const response = createServer(name, status, configuration ?? {}, version);
+  const userId = request.user?.id;
+
+  const response = await createServer(
+    name,
+    status,
+    configuration ?? {},
+    version,
+    userId as number
+  );
+
+  return reply.status(201).send(response);
 }
