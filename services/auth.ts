@@ -1,12 +1,10 @@
+import { createToken } from './../utils/jwt';
 import { PrismaClient } from '@prisma/client';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
-import { UserWithoutPassword } from '../models/index.js';
 
 const prisma = new PrismaClient();
 const SALT_ROUNDS = process.env.SALT_ROUNDS ? parseInt(process.env.SALT_ROUNDS, 10) : 12;
-const JWT_SECRET: string = process.env.JWT_SECRET || 'fallback-secret-key';
-const JWT_EXPIRES_IN: string = process.env.JWT_EXPIRES_IN || '12h';
 
 export interface LoginRequest {
   email: string;
@@ -17,7 +15,10 @@ export interface LoginResponse {
   success: boolean;
   message: string;
   token?: string;
-  user?: UserWithoutPassword;
+  user?: {
+    email: string;
+    username: string;
+  };
 }
 
 export async function login(credentials: LoginRequest): Promise<LoginResponse> {
@@ -45,18 +46,13 @@ export async function login(credentials: LoginRequest): Promise<LoginResponse> {
     }
 
     // Generate JWT token with user id
-    const token = jwt.sign(
-      { id: user.id, email: user.email },
-      JWT_SECRET,
-      { expiresIn: JWT_EXPIRES_IN }
-    );
+    const token = createToken(user.id, user.email);
 
     return {
       success: true,
       message: 'Login successful',
       token,
       user: {
-        id: user.id,
         email: user.email,
         username: user.username,
       },
@@ -73,15 +69,30 @@ export async function login(credentials: LoginRequest): Promise<LoginResponse> {
 export async function register(email: string, password: string, username: string) {
   try {
     // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [{ email }, { username }],
+      },
+      select: {
+        email: true,
+        username: true,
+      },
     });
 
     if (existingUser) {
-      return {
-        success: false,
-        message: 'User already exists',
-      };
+      if (existingUser.email === email) {
+        return {
+          success: false,
+          message: "Email already exists",
+        };
+      }
+
+      if (existingUser.username === username) {
+        return {
+          success: false,
+          message: "Username already exists",
+        };
+      }
     }
 
     // Hash password
@@ -97,18 +108,13 @@ export async function register(email: string, password: string, username: string
     });
 
     // Generate JWT token
-    const token = jwt.sign(
-      { id: user.id, email: user.email },
-      JWT_SECRET,
-      { expiresIn: JWT_EXPIRES_IN }
-    );
+    const token = createToken(user.id, user.email);
 
     return {
       success: true,
-      message: 'User registered successfully',
+      message: "User registered successfully",
       token,
       user: {
-        id: user.id,
         email: user.email,
         username: user.username,
       },
