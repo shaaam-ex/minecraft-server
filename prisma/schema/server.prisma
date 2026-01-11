@@ -1,0 +1,14 @@
+model Server {
+    id Int @id @default(autoincrement())
+    name String
+    ipAddress String @unique
+    port Int
+    status Boolean @default(false)
+    configuration Json
+    version String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    createdBy Int
+    // Relations
+    createdById User @relation("UserServers", fields: [createdBy], references: [id], onDelete: Cascade)
+}
