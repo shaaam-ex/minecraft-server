@@ -69,15 +69,30 @@ export async function login(credentials: LoginRequest): Promise<LoginResponse> {
 export async function register(email: string, password: string, username: string) {
   try {
     // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [{ email }, { username }],
+      },
+      select: {
+        email: true,
+        username: true,
+      },
     });
 
     if (existingUser) {
-      return {
-        success: false,
-        message: 'User already exists',
-      };
+      if (existingUser.email === email) {
+        return {
+          success: false,
+          message: "Email already exists",
+        };
+      }
+
+      if (existingUser.username === username) {
+        return {
+          success: false,
+          message: "Username already exists",
+        };
+      }
     }
 
     // Hash password
@@ -97,7 +112,7 @@ export async function register(email: string, password: string, username: string
 
     return {
       success: true,
-      message: 'User registered successfully',
+      message: "User registered successfully",
       token,
       user: {
         email: user.email,
