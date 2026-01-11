@@ -1,0 +1,40 @@
+{
+  "name": "minecraft-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/app.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch app.ts",
+    "start": "node dist/app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shaaam-ex/minecraft-server.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/shaaam-ex/minecraft-server/issues"
+  },
+  "homepage": "https://github.com/shaaam-ex/minecraft-server#readme",
+  "dependencies": {
+    "@prisma/client": "^5.8.0",
+    "bcrypt": "^5.1.1",
+    "fastify": "^5.6.2",
+    "jsonwebtoken": "^9.0.2",
+    "validatorjs": "^3.22.1"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/node": "^25.0.6",
+    "@types/validatorjs": "^3.15.5",
+    "prisma": "^5.8.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}
