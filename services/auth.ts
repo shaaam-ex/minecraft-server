@@ -5,8 +5,6 @@ import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 const SALT_ROUNDS = process.env.SALT_ROUNDS ? parseInt(process.env.SALT_ROUNDS, 10) : 12;
-const JWT_SECRET: string = process.env.JWT_SECRET || 'fallback-secret-key';
-const JWT_EXPIRES_IN: string = process.env.JWT_EXPIRES_IN || '12h';
 
 export interface LoginRequest {
   email: string;
@@ -102,7 +100,6 @@ export async function register(email: string, password: string, username: string
       message: 'User registered successfully',
       token,
       user: {
-        id: user.id,
         email: user.email,
         username: user.username,
       },
