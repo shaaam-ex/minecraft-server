@@ -31,9 +31,20 @@ export async function createServer(
         port: 25565,
       },
     });
-    return server;
+    return {
+      success: true,
+      message: "Server created successfully",
+      server: {
+        name: server.name,
+        status: server.status,
+        configuration: server.configuration,
+        version: server.version,
+        ipAddress: server.ipAddress,
+        port: server.port,
+      },
+    };
   } catch (error) {
     console.error("Error creating server:", error);
-    throw error;
+    return { success: false, message: "Failed to create server" };
   }
 }
