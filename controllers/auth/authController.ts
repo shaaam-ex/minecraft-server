@@ -13,7 +13,7 @@ export interface RegisterRequestBody extends LoginRequestBody {
 
 export async function loginController(
   request: FastifyRequest,
-  response: FastifyReply
+  reply: FastifyReply
 ) {
   try {
     const { email, password } = (request.body as LoginRequestBody) || {};
@@ -26,7 +26,7 @@ export async function loginController(
     const validator = new Validatorjs({ email, password }, rules);
 
     if (validator.fails()) {
-      return response.status(400).send({
+      return reply.status(400).send({
         success: false,
         message: "Validation failed",
       });
@@ -35,13 +35,23 @@ export async function loginController(
     const result = await login({ email, password });
 
     if (!result.success) {
-      return response.status(401).send(result);
+      return reply
+        .status(401)
+        .send({ success: false, message: "Invalid credentials" });
     }
 
-    return response.status(200).send(result);
+    reply.setCookie("token", result.token as string, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/",
+      maxAge: parseInt(process.env.COOKIE_EXPIRES_IN as string) || 43200,
+    });
+
+    return reply.status(200).send(result);
   } catch (error) {
     console.error("Login controller error:", error);
-    return response.status(500).send({
+    return reply.status(500).send({
       success: false,
       message: "Internal server error",
     });
@@ -77,6 +87,14 @@ export async function registerController(
       return reply.status(400).send(result);
     }
 
+    reply.setCookie("token", result.token as string, {
+      httpOnly: true,
+      // secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/",
+      maxAge: parseInt(process.env.COOKIE_EXPIRES_IN as string) || 43200,
+    });
+
     return reply.status(201).send(result);
   } catch (error) {
     console.error("Register controller error:", error);
@@ -85,4 +103,15 @@ export async function registerController(
       message: "Internal server error",
     });
   }
+}
+
+export async function logoutController(
+  request: FastifyRequest,
+  reply: FastifyReply
+) {
+  reply.clearCookie("token", { path: "/" });
+  return reply.status(200).send({
+    success: true,
+    message: "Logged out successfully",
+  });
 }
