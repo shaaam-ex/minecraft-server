@@ -7,7 +7,8 @@
     "build": "tsc",
     "dev": "tsx watch app.ts",
     "start": "node dist/app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "db": "prisma migrate dev"
   },
   "repository": {
     "type": "git",

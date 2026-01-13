@@ -12,7 +12,12 @@ const fastify = Fastify({ logger: true });
 // Register the main /api router
 fastify.register(apiRouter, { prefix: "/api" });
 fastify.register(cors, {
-  origin: ["*"],
+  origin: [
+    "http://localhost:5173",
+    "http://localhost:4173",
+    "http://192.168.18.18:5173",
+    "http://192.168.18.18:4173",
+  ],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
