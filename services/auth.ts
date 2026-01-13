@@ -1,9 +1,11 @@
-import { createToken } from './../utils/jwt';
-import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcrypt';
+import { createToken } from "./../utils/jwt";
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
-const SALT_ROUNDS = process.env.SALT_ROUNDS ? parseInt(process.env.SALT_ROUNDS, 10) : 12;
+const SALT_ROUNDS = process.env.SALT_ROUNDS
+  ? parseInt(process.env.SALT_ROUNDS, 10)
+  : 12;
 
 export interface LoginRequest {
   email: string;
@@ -30,17 +32,20 @@ export async function login(credentials: LoginRequest): Promise<LoginResponse> {
     if (!user) {
       return {
         success: false,
-        message: 'Invalid email or password',
+        message: "Invalid email or password",
       };
     }
 
     // Compare password with hashed password
-    const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
+    const isPasswordValid = await bcrypt.compare(
+      credentials.password,
+      user.password
+    );
 
     if (!isPasswordValid) {
       return {
         success: false,
-        message: 'Invalid email or password',
+        message: "Invalid email or password",
       };
     }
 
@@ -49,7 +54,7 @@ export async function login(credentials: LoginRequest): Promise<LoginResponse> {
 
     return {
       success: true,
-      message: 'Login successful',
+      message: "Login successful",
       token,
       user: {
         email: user.email,
@@ -57,15 +62,19 @@ export async function login(credentials: LoginRequest): Promise<LoginResponse> {
       },
     };
   } catch (error) {
-    console.error('Login error:', error);
+    console.error("Login error:", error);
     return {
       success: false,
-      message: 'An error occurred during login',
+      message: "An error occurred during login",
     };
   }
 }
 
-export async function register(email: string, password: string, username: string) {
+export async function register(
+  email: string,
+  password: string,
+  username: string
+) {
   try {
     // Check if user already exists
     const existingUser = await prisma.user.findFirst({
@@ -119,10 +128,10 @@ export async function register(email: string, password: string, username: string
       },
     };
   } catch (error) {
-    console.error('Registration error:', error);
+    console.error("Registration error:", error);
     return {
       success: false,
-      message: 'An error occurred during registration',
+      message: "An error occurred during registration",
     };
   }
 }

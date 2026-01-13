@@ -18,19 +18,22 @@ export async function validateAuth(
   request: FastifyRequest,
   reply: FastifyReply
 ) {
-  const authHeader = request.headers.authorization;
+  const cookieHeader = request.headers.cookie;
+  const authToken = cookieHeader
+    ?.split(";")
+    .map((c) => c.trim())
+    .find((c) => c.startsWith("token="))
+    ?.split("=")[1];
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+  if (!authToken) {
     return reply.status(401).send({
       success: false,
       message: "User not authenticated",
     });
   }
 
-  const token = authHeader.split(" ")[1];
-
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as AuthPayload;
+    const decoded = jwt.verify(authToken, JWT_SECRET) as AuthPayload;
     request.user = decoded;
   } catch {
     return reply.status(401).send({

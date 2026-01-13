@@ -1,5 +1,6 @@
 import "dotenv/config";
 import Fastify from "fastify";
+import cookie from "@fastify/cookie";
 import apiRouter from "./routes/api.js";
 import cors from "@fastify/cors";
 import dotenv from "dotenv";
@@ -19,8 +20,13 @@ fastify.register(cors, {
     "http://192.168.18.18:4173",
   ],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
+});
+
+// Register cookie plugin
+fastify.register(cookie, {
+  secret: process.env.COOKIE_SECRET || "your-secret-key",
+  parseOptions: {},
 });
 
 // Start the server
