@@ -4,6 +4,7 @@ import {
   createServer,
   getAllServers,
   getServerById,
+  stopServer,
 } from "../../services/server";
 import Validator from "validatorjs";
 import { ServerType } from "../../minecraft-commons/types/server";
@@ -119,8 +120,10 @@ export async function stopServerController(
   // Checking if server exists and is running
   const server = await getServerById(parseInt(id));
 
-  if (!server.success) {
+  if (!server.success || !server.server) {
     return reply.status(404).send({ message: "Server not found" });
   }
-  return reply.status(501).send({ message: "Not implemented" });
+
+  const response = await stopServer(parseInt(id), server.server.name);
+  return reply.status(200).send(response);
 }

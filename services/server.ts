@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import SERVER_STATUSES from "../minecraft-commons/ENUMs/serverStatus";
 const prisma = new PrismaClient();
 const deploymentServiceUrl =
   process.env.DEPLOYMENT_SERVER || "http://localhost:4000";
@@ -53,7 +54,7 @@ export async function createServer(
     const server = await prisma.server.create({
       data: {
         name,
-        status: "creating",
+        status: SERVER_STATUSES.CREATING.value,
         configuration,
         version,
         createdBy: userId,
@@ -80,7 +81,7 @@ export async function createServer(
     const deploymentResponse =
       (await response.json()) as deploymentServerCreateResponse;
 
-    if (!deploymentResponse.success) {
+    if (!deploymentResponse.success || !deploymentResponse.data) {
       // If deployment fails, we should rollback the created server entry
       await prisma.server.delete({ where: { id: server.id } });
       return { success: false, message: "Failed to deploy server" };
@@ -89,7 +90,7 @@ export async function createServer(
     // Updating the server status to running after successful deployment
     await prisma.server.update({
       where: { id: server.id },
-      data: { status: "running" },
+      data: { status: SERVER_STATUSES.RUNNING.value },
     });
 
     return {
@@ -115,8 +116,14 @@ type deploymentServerStopResponse = {
   message: string;
 };
 
-export async function stopServer(serverName: string) {
+export async function stopServer(serverId: number, serverName: string) {
   try {
+    // Updating server status to stopping
+    await prisma.server.update({
+      where: { id: serverId },
+      data: { status: SERVER_STATUSES.STOPPING.value },
+    });
+
     // Calling Deployment Service to stop the server
     const response: Response = await fetch(`${deploymentServiceUrl}/stop`, {
       method: "POST",
@@ -138,7 +145,7 @@ export async function stopServer(serverName: string) {
     // Update the server status in the database
     await prisma.server.update({
       where: { id: serverId },
-      data: { status: "stopped" },
+      data: { status: SERVER_STATUSES.STOPPED.value },
     });
 
     return { success: true, message: "Server stopped successfully" };
