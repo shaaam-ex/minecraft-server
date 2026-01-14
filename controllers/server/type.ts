@@ -1,6 +1,6 @@
 export interface CreateServerBody {
   name: string;
-  status: boolean;
-  configuration?: Record<string, any>;
+  type: string;
   version: string;
+  configuration?: Record<string, any>;
 }

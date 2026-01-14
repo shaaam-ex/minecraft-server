@@ -16,16 +16,16 @@ export async function getAllServers() {
 
 export async function createServer(
   name: string,
-  status: boolean,
   configuration: Record<string, any>,
   version: string,
+  type: string,
   userId: number
 ) {
   try {
     const server = await prisma.server.create({
       data: {
         name,
-        status,
+        status: "creating",
         configuration,
         version,
         createdBy: userId,
