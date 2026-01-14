@@ -1,7 +1,10 @@
 import { FastifyInstance } from "fastify";
 import {
   createServerController,
+  deleteServerController,
   getAllServersController,
+  getServerDetailsController,
+  getServerPerformanceMetricsController,
   startServerController,
   stopServerController,
 } from "./serverController";
@@ -22,5 +25,26 @@ export default async function serverRoutes(fastify: FastifyInstance) {
     "/start/:id",
     { preHandler: validateAuth },
     startServerController
+  );
+
+  // GET /api/server/details/:id
+  fastify.get(
+    "/details/:id",
+    { preHandler: validateAuth },
+    getServerDetailsController
+  );
+
+  // GET /api/server/metrics/:id
+  fastify.get(
+    "/metrics/:id",
+    { preHandler: validateAuth },
+    getServerPerformanceMetricsController
+  );
+
+  // DELETE /api/server/delete/:id
+  fastify.delete(
+    "/delete/:id",
+    { preHandler: validateAuth },
+    deleteServerController
   );
 }

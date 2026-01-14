@@ -2,8 +2,10 @@ import { CreateServerBody } from "./type";
 import { FastifyRequest, FastifyReply } from "fastify";
 import {
   createServer,
+  deleteServer,
   getAllServers,
   getServerById,
+  getServerPerformanceMetrics,
   startServer,
   stopServer,
 } from "../../services/server";
@@ -79,8 +81,24 @@ export async function deleteServerController(
   request: FastifyRequest,
   reply: FastifyReply
 ) {
-  // To be implemented
-  return reply.status(501).send({ message: "Not implemented" });
+  const { id } = request.params as { id: string };
+
+  if (!id) {
+    return reply.status(400).send({ message: "Server ID is required" });
+  }
+
+  const server = await getServerById(parseInt(id));
+
+  if (!server.success || !server.server) {
+    return reply.status(404).send({ message: "Server not found" });
+  }
+
+  const response = await deleteServer(parseInt(id), server.server.name);
+  if (!response.success) {
+    return reply.status(500).send({
+      message: "Failed to delete the server",
+    });
+  }
 }
 
 export async function updateServerController(
@@ -95,8 +113,36 @@ export async function getServerDetailsController(
   request: FastifyRequest,
   reply: FastifyReply
 ) {
-  // To be implemented
-  return reply.status(501).send({ message: "Not implemented" });
+  const { id } = request.params as { id: string };
+
+  if (!id) {
+    return reply.status(400).send({ message: "Server ID is required" });
+  }
+
+  const server = await getServerById(parseInt(id));
+
+  if (!server.success || !server.server) {
+    return reply.status(404).send({ message: "Server not found" });
+  }
+
+  return reply.status(200).send(server);
+}
+
+export async function getServerPerformanceMetricsController(
+  request: FastifyRequest,
+  reply: FastifyReply
+) {
+  const { id } = request.params as { id: string };
+  if (!id) {
+    return reply.status(400).send({ message: "Server ID is required" });
+  }
+  const metrics = await getServerPerformanceMetrics(parseInt(id));
+  if (!metrics.success) {
+    return reply
+      .status(500)
+      .send({ message: metrics.message || "Error fetching metrics" });
+  }
+  return reply.status(200).send(metrics);
 }
 
 export async function stopServerController(

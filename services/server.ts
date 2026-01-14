@@ -27,12 +27,73 @@ export async function getServerById(serverId: number) {
     if (!server) {
       return { success: false, message: "Server not found" };
     }
-    return { success: true, server };
+    return {
+      success: true,
+      server: {
+        name: server.name,
+        status: server.status,
+        // configuration: server.configuration,
+        version: server.version,
+        ipAddress: server.ipAddress,
+        port: server.port,
+        type: server.type,
+      },
+    };
   } catch (error) {
     console.error("Error fetching server by ID:", error);
     return { success: false, message: "Failed to fetch server" };
   }
 }
+
+type ServerPerformanceMetrics = {
+  success: boolean;
+  data: {
+    message?: string;
+    cpuUsage: string;
+    memoryUsage: string;
+    memoryPerc: string;
+    status: string;
+  };
+};
+
+export const getServerPerformanceMetrics = async (serverId: number) => {
+  try {
+    const server = await prisma.server.findUnique({
+      where: { id: serverId },
+    });
+    if (!server) {
+      return { success: false, message: "Server not found" };
+    }
+
+    const response: Response = await fetch(
+      `${deploymentServiceUrl}/metrics/${server.name}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const { success, data } =
+      (await response.json()) as ServerPerformanceMetrics;
+
+    if (!success) {
+      return { success: false, message: "Failed to fetch server metrics" };
+    }
+
+    return {
+      success: true,
+      metrics: {
+        cpuUsage: data.cpuUsage,
+        memoryUsage: data.memoryUsage,
+        memoryPerc: data.memoryPerc,
+      },
+    };
+  } catch (e) {
+    return { success: false, message: "Failed to fetch server metrics" };
+  }
+};
 
 type deploymentServerCreateResponse = {
   success: boolean;
@@ -182,6 +243,10 @@ export async function startServer(serverId: number, serverName: string) {
       (await response.json()) as deploymentServerStartStopResponse;
 
     if (!deploymentResponse.success) {
+      await prisma.server.update({
+        where: { id: serverId },
+        data: { status: SERVER_STATUSES.STOPPED.value },
+      });
       return { success: false, message: "Failed to start server" };
     }
 
@@ -194,6 +259,38 @@ export async function startServer(serverId: number, serverName: string) {
     return { success: true, message: "Server started successfully" };
   } catch (error) {
     console.error("Error starting server:", error);
+    await prisma.server.update({
+      where: { id: serverId },
+      data: { status: SERVER_STATUSES.STOPPED.value },
+    });
     return { success: false, message: "Failed to start server" };
+  }
+}
+
+export async function deleteServer(serverId: number, serverName: string) {
+  try {
+    // Calling Deployment Service to delete the server
+    const response: Response = await fetch(`${deploymentServiceUrl}/delete`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        containerName: serverName,
+      }),
+    });
+    const deploymentResponse =
+      (await response.json()) as deploymentServerStartStopResponse;
+    if (!deploymentResponse.success) {
+      return { success: false, message: "Failed to delete server" };
+    }
+    // Deleting the server entry from the database
+    await prisma.server.delete({
+      where: { id: serverId },
+    });
+    return { success: true, message: "Server deleted successfully" };
+  } catch (error) {
+    console.error("Error deleting server:", error);
+    return { success: false, message: "Failed to delete server" };
   }
 }
