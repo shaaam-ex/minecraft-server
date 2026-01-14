@@ -29,9 +29,7 @@ export async function createServer(
         configuration,
         version,
         createdBy: userId,
-        // Dynamically set port by using ssh
-        ipAddress: "localhost",
-        port: 25565,
+        type,
       },
     });
     return {

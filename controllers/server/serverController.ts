@@ -2,6 +2,8 @@ import { CreateServerBody } from "./type";
 import { FastifyRequest, FastifyReply } from "fastify";
 import { createServer, getAllServers } from "../../services/server";
 import Validator from "validatorjs";
+import { ServerType } from "../../minecraft-commons/types/server";
+import { SUPPORTED_VERSIONS } from "../../minecraft-commons/ENUMs/versions";
 
 export async function getAllServersController(
   request: FastifyRequest,
@@ -35,6 +37,22 @@ export async function createServerController(
     return reply.status(400).send({
       success: false,
       message: "Validation failed",
+    });
+  }
+
+  // Validating if the type specified exists in supported types
+  if (Object.keys(ServerType).indexOf(type) === -1) {
+    return reply.status(400).send({
+      success: false,
+      message: "Invalid server type specified",
+    });
+  }
+
+  // Validating if the version specified is supported for the given type
+  if (!SUPPORTED_VERSIONS.includes(version)) {
+    return reply.status(400).send({
+      success: false,
+      message: "Unsupported server version specified",
     });
   }
 

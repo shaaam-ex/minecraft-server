@@ -1,11 +1,12 @@
 model Server {
     id            Int      @id @default(autoincrement())
     name          String
-    ipAddress     String
-    port          Int
+    ipAddress     String?
+    port          Int?
     status        String   @default("offline")
     configuration Json
     version       String
+    type          String
     createdAt     DateTime @default(now())
     updatedAt     DateTime @updatedAt
     createdBy     Int

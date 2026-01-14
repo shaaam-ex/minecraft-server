@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Server" ALTER COLUMN "ipAddress" DROP NOT NULL,
+ALTER COLUMN "port" DROP NOT NULL;
