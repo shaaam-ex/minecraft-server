@@ -2,6 +2,7 @@ import { FastifyInstance } from "fastify";
 import {
   createServerController,
   getAllServersController,
+  startServerController,
   stopServerController,
 } from "./serverController";
 import { validateAuth } from "../../middleware/validateAuth";
@@ -15,4 +16,11 @@ export default async function serverRoutes(fastify: FastifyInstance) {
 
   // GET /api/server/stop/:id
   fastify.get("/stop/:id", { preHandler: validateAuth }, stopServerController);
+
+  // GET /api/server/start/:id
+  fastify.get(
+    "/start/:id",
+    { preHandler: validateAuth },
+    startServerController
+  );
 }

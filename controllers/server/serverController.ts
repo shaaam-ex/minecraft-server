@@ -4,6 +4,7 @@ import {
   createServer,
   getAllServers,
   getServerById,
+  startServer,
   stopServer,
 } from "../../services/server";
 import Validator from "validatorjs";
@@ -98,14 +99,6 @@ export async function getServerDetailsController(
   return reply.status(501).send({ message: "Not implemented" });
 }
 
-export async function startServerController(
-  request: FastifyRequest,
-  reply: FastifyReply
-) {
-  // To be implemented
-  return reply.status(501).send({ message: "Not implemented" });
-}
-
 export async function stopServerController(
   request: FastifyRequest,
   reply: FastifyReply
@@ -125,5 +118,27 @@ export async function stopServerController(
   }
 
   const response = await stopServer(parseInt(id), server.server.name);
+  return reply.status(200).send(response);
+}
+
+export async function startServerController(
+  request: FastifyRequest,
+  reply: FastifyReply
+) {
+  // We get server id from query params
+  const { id } = request.params as { id: string };
+
+  if (!id) {
+    return reply.status(400).send({ message: "Server ID is required" });
+  }
+
+  // Checking if server exists and is running
+  const server = await getServerById(parseInt(id));
+
+  if (!server.success || !server.server) {
+    return reply.status(404).send({ message: "Server not found" });
+  }
+
+  const response = await startServer(parseInt(id), server.server.name);
   return reply.status(200).send(response);
 }

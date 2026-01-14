@@ -111,7 +111,7 @@ export async function createServer(
   }
 }
 
-type deploymentServerStopResponse = {
+type deploymentServerStartStopResponse = {
   success: boolean;
   message: string;
 };
@@ -136,7 +136,7 @@ export async function stopServer(serverId: number, serverName: string) {
     });
 
     const deploymentResponse =
-      (await response.json()) as deploymentServerStopResponse;
+      (await response.json()) as deploymentServerStartStopResponse;
 
     if (!deploymentResponse.success) {
       return { success: false, message: "Failed to stop server" };
@@ -152,5 +152,44 @@ export async function stopServer(serverId: number, serverName: string) {
   } catch (error) {
     console.error("Error stopping server:", error);
     return { success: false, message: "Failed to stop server" };
+  }
+}
+
+export async function startServer(serverId: number, serverName: string) {
+  try {
+    // Updating server status to starting
+    await prisma.server.update({
+      where: { id: serverId },
+      data: { status: SERVER_STATUSES.STARTING.value },
+    });
+
+    // Calling Deployment Service to start the server
+    const response: Response = await fetch(`${deploymentServiceUrl}/start`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        containerName: serverName,
+      }),
+    });
+
+    const deploymentResponse =
+      (await response.json()) as deploymentServerStartStopResponse;
+
+    if (!deploymentResponse.success) {
+      return { success: false, message: "Failed to start server" };
+    }
+
+    // Update the server status in the database
+    await prisma.server.update({
+      where: { id: serverId },
+      data: { status: SERVER_STATUSES.RUNNING.value },
+    });
+
+    return { success: true, message: "Server started successfully" };
+  } catch (error) {
+    console.error("Error starting server:", error);
+    return { success: false, message: "Failed to start server" };
   }
 }
