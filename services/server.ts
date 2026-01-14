@@ -38,7 +38,7 @@ type deploymentServerCreateResponse = {
   success: boolean;
   message: string;
   data: {
-    port: number;
+    port: string;
     ipAddress: string;
   };
 };
@@ -90,7 +90,11 @@ export async function createServer(
     // Updating the server status to running after successful deployment
     await prisma.server.update({
       where: { id: server.id },
-      data: { status: SERVER_STATUSES.RUNNING.value },
+      data: {
+        status: SERVER_STATUSES.RUNNING.value,
+        ipAddress: deploymentResponse.data.ipAddress,
+        port: parseInt(deploymentResponse.data.port),
+      },
     });
 
     return {
