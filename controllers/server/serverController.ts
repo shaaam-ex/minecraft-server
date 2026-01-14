@@ -19,14 +19,14 @@ export async function createServerController(
   request: FastifyRequest,
   reply: FastifyReply
 ) {
-  const { name, status, configuration, version } =
+  const { name, configuration, version, type } =
     request.body as CreateServerBody;
   // Validation
   const validator = new Validator(
-    { name, status, version },
+    { name, type, version },
     {
       name: "required|string",
-      status: "required|boolean",
+      type: "required|string",
       version: "required|string",
     }
   );
@@ -42,9 +42,9 @@ export async function createServerController(
 
   const response = await createServer(
     name,
-    status,
     configuration ?? {},
     version,
+    type,
     userId as number
   );
 

@@ -3,7 +3,7 @@ model Server {
     name          String
     ipAddress     String
     port          Int
-    status        Boolean  @default(false)
+    status        String   @default("offline")
     configuration Json
     version       String
     createdAt     DateTime @default(now())
