@@ -18,6 +18,21 @@ export async function getAllServers() {
   }
 }
 
+export async function getServerById(serverId: number) {
+  try {
+    const server = await prisma.server.findUnique({
+      where: { id: serverId },
+    });
+    if (!server) {
+      return { success: false, message: "Server not found" };
+    }
+    return { success: true, server };
+  } catch (error) {
+    console.error("Error fetching server by ID:", error);
+    return { success: false, message: "Failed to fetch server" };
+  }
+}
+
 type deploymentServerCreateResponse = {
   success: boolean;
   message: string;
@@ -70,6 +85,13 @@ export async function createServer(
       await prisma.server.delete({ where: { id: server.id } });
       return { success: false, message: "Failed to deploy server" };
     }
+
+    // Updating the server status to running after successful deployment
+    await prisma.server.update({
+      where: { id: server.id },
+      data: { status: "running" },
+    });
+
     return {
       success: true,
       message: "Server created successfully",
@@ -85,5 +107,43 @@ export async function createServer(
   } catch (error) {
     console.error("Error creating server:", error);
     return { success: false, message: "Failed to create server" };
+  }
+}
+
+type deploymentServerStopResponse = {
+  success: boolean;
+  message: string;
+};
+
+export async function stopServer(serverName: string) {
+  try {
+    // Calling Deployment Service to stop the server
+    const response: Response = await fetch(`${deploymentServiceUrl}/stop`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        containerName: serverName,
+      }),
+    });
+
+    const deploymentResponse =
+      (await response.json()) as deploymentServerStopResponse;
+
+    if (!deploymentResponse.success) {
+      return { success: false, message: "Failed to stop server" };
+    }
+
+    // Update the server status in the database
+    await prisma.server.update({
+      where: { id: serverId },
+      data: { status: "stopped" },
+    });
+
+    return { success: true, message: "Server stopped successfully" };
+  } catch (error) {
+    console.error("Error stopping server:", error);
+    return { success: false, message: "Failed to stop server" };
   }
 }

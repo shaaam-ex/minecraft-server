@@ -1,6 +1,10 @@
 import { CreateServerBody } from "./type";
 import { FastifyRequest, FastifyReply } from "fastify";
-import { createServer, getAllServers } from "../../services/server";
+import {
+  createServer,
+  getAllServers,
+  getServerById,
+} from "../../services/server";
 import Validator from "validatorjs";
 import { ServerType } from "../../minecraft-commons/types/server";
 import { SUPPORTED_VERSIONS } from "../../minecraft-commons/ENUMs/versions";
@@ -67,4 +71,56 @@ export async function createServerController(
   );
 
   return reply.status(201).send(response);
+}
+
+export async function deleteServerController(
+  request: FastifyRequest,
+  reply: FastifyReply
+) {
+  // To be implemented
+  return reply.status(501).send({ message: "Not implemented" });
+}
+
+export async function updateServerController(
+  request: FastifyRequest,
+  reply: FastifyReply
+) {
+  // To be implemented
+  return reply.status(501).send({ message: "Not implemented" });
+}
+
+export async function getServerDetailsController(
+  request: FastifyRequest,
+  reply: FastifyReply
+) {
+  // To be implemented
+  return reply.status(501).send({ message: "Not implemented" });
+}
+
+export async function startServerController(
+  request: FastifyRequest,
+  reply: FastifyReply
+) {
+  // To be implemented
+  return reply.status(501).send({ message: "Not implemented" });
+}
+
+export async function stopServerController(
+  request: FastifyRequest,
+  reply: FastifyReply
+) {
+  // We get server id from query params
+  const { id } = request.params as { id: string };
+
+  if (!id) {
+    return reply.status(400).send({ message: "Server ID is required" });
+  }
+
+  // Checking if server exists and is running
+  const server = await getServerById(parseInt(id));
+
+  if (!server.success) {
+    return reply.status(404).send({ message: "Server not found" });
+  }
+  return reply.status(501).send({ message: "Not implemented" });
 }
