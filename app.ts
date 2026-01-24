@@ -1,39 +1,53 @@
 import "dotenv/config";
 import Fastify from "fastify";
+import cors from "@fastify/cors";
 import cookie from "@fastify/cookie";
 import apiRouter from "./routes/api.js";
-import cors from "@fastify/cors";
 import dotenv from "dotenv";
 
-// Load environment variables from .env file
+// Load env
 dotenv.config({ path: ".env" });
 
-const fastify = Fastify({ logger: true });
+const fastify = Fastify({
+  logger: true,
+  trustProxy: true, // IMPORTANT for nginx + cookies
+});
 
-// Register the main /api router
-fastify.register(apiRouter, { prefix: "/api" });
+/**
+ * CORS MUST be registered BEFORE routes
+ */
 fastify.register(cors, {
   origin: [
-    "http://localhost:5173",
-    "http://localhost:4173",
+    "http://minecraft.cinemarque.space",
+    "https://minecraft.cinemarque.space",
+    "http://192.168.18.18",
     "http://192.168.18.18:5173",
     "http://192.168.18.18:4173",
+    "http://localhost:5173"
   ],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true,
 });
 
-// Register cookie plugin
+/**
+ * Cookies
+ */
 fastify.register(cookie, {
-  secret: process.env.COOKIE_SECRET || "your-secret-key",
-  parseOptions: {},
+  secret: process.env.COOKIE_SECRET || "dev-secret",
 });
 
-// Start the server
+/**
+ * Routes
+ */
+fastify.register(apiRouter, { prefix: "/api" });
+
+/**
+ * Start server
+ */
 const start = async () => {
   try {
     await fastify.listen({ port: 3000, host: "0.0.0.0" });
-    console.log("Server running on http://127.0.0.1:3000");
+    fastify.log.info("API running on :3000");
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);
