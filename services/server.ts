@@ -1,6 +1,5 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../prisma/client";
 import SERVER_STATUSES from "../minecraft-commons/ENUMs/serverStatus";
-const prisma = new PrismaClient();
 const deploymentServiceUrl =
   process.env.DEPLOYMENT_SERVER || "http://localhost:4000";
 const defaultMemory = process.env.DEFAULT_MEMORY || "1g";

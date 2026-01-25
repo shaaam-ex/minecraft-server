@@ -1,8 +1,7 @@
 import { createToken } from "./../utils/jwt";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../prisma/client";
 import bcrypt from "bcrypt";
 
-const prisma = new PrismaClient();
 const SALT_ROUNDS = process.env.SALT_ROUNDS
   ? parseInt(process.env.SALT_ROUNDS, 10)
   : 12;
