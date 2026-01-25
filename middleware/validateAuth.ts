@@ -39,11 +39,10 @@ export async function validateAuth(
 
     const user = await prisma.user.findUnique({
       where: { id: decoded.id },
-      select: { id: true, tokenVersion: true },
     });
 
     // 🔥 User deleted OR token revoked
-    if (!user || user.tokenVersion !== decoded.tokenVersion) {
+    if (!user) {
       reply.clearCookie("token");
       return reply.status(401).send({
         success: false,
