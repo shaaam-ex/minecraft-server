@@ -1,5 +1,6 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import jwt, { JwtPayload } from "jsonwebtoken";
+import { prisma } from "../prisma/client";
 
 interface AuthPayload extends JwtPayload {
   id: number;
@@ -34,6 +35,20 @@ export async function validateAuth(
 
   try {
     const decoded = jwt.verify(authToken, JWT_SECRET) as AuthPayload;
+    
+
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id },
+    });
+
+    // 🔥 User deleted OR token revoked
+    if (!user) {
+      reply.clearCookie("token");
+      return reply.status(401).send({
+        success: false,
+        message: "Session expired",
+      });
+    }
     request.user = decoded;
   } catch {
     return reply.status(401).send({
